@@ -1,0 +1,43 @@
+{
+  "name": "aplicacao-modelo-backend",
+  "version": "1.0.0",
+  "description": "Backend para Plataforma de Saúde e Gestão Animal - Juiz de Fora",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed:admin": "node scripts/seedAdmin.js",
+    "test:smoke": "node scripts/smokeTest.js",
+    "integrity": "node scripts/runIntegrity.js",
+    "bd:inicializadores": "node banco_dados/executar_inicializadores.js",
+    "bd:migracoes": "node banco_dados/executar_migracoes.js",
+    "bd:auxiliares": "node banco_dados/executar_auxiliares.js"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "8.3.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "express-async-handler": "^1.2.0",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.5.45",
+    "mongoose": "^7.8.9",
+    "mongoose-paginate-v2": "^1.8.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "redis": "^4.6.13",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

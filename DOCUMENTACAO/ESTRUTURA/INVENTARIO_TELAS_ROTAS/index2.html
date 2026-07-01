@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inventário Telas & Rotas — Plataforma Aplicação Modelo</title>
+
+<!-- Markdown parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  :root {
+    --primary-green: #006644;
+    --primary-teal:  #004d40;
+    --bg-light:      #f4f6f8;
+    --bg-card:       #ffffff;
+    --border:        #e2e8f0;
+    --text:          #1f2937;
+    --text-muted:    #64748b;
+    --accent-yes:    #059669;
+    --accent-no:     #94a3b8;
+    --accent-section:#0ea5e9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--bg-light) 0%, #e0f2f1 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 77, 64, 0.08);
+    overflow: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--primary-teal), var(--primary-green));
+    color: #fff;
+    padding: 2rem 2.5rem;
+  }
+
+  header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+  }
+
+  header a {
+    color: #a7f3d0;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  header a:hover { text-decoration: underline; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem 2.5rem;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .toolbar input[type="search"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .toolbar input[type="search"]:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 102, 68, 0.15);
+  }
+
+  .counter {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .counter strong { color: var(--primary-green); }
+
+  .content {
+    padding: 2rem 2.5rem 3rem;
+  }
+
+  /* Estilos do markdown renderizado */
+  .markdown h1 {
+    color: var(--primary-teal);
+    border-bottom: 2px solid var(--primary-green);
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+  }
+  .markdown h2 {
+    color: var(--primary-green);
+    margin-top: 2.5rem;
+    padding: 0.5rem 1rem;
+    background: #ecfdf5;
+    border-left: 4px solid var(--primary-green);
+    border-radius: 4px;
+  }
+  .markdown h3 {
+    color: var(--primary-teal);
+    margin-top: 1.5rem;
+  }
+  .markdown p { line-height: 1.6; }
+  .markdown ul { padding-left: 1.5rem; }
+  .markdown li { margin: 0.3rem 0; line-height: 1.6; }
+  .markdown code {
+    background: #f1f5f9;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--primary-teal);
+  }
+  .markdown a {
+    color: var(--primary-green);
+    font-weight: 600;
+  }
+
+  /* Tabela */
+  .markdown table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    font-size: 0.92rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+  .markdown thead {
+    background: linear-gradient(135deg, var(--primary-teal), var(--primary-green));
+    color: #fff;
+  }
+  .markdown th {
+    padding: 0.9rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .markdown td {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .markdown tbody tr:nth-child(even) { background: #f8fafc; }
+  .markdown tbody tr:hover { background: #ecfdf5; }
+
+  /* Badges Auth */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-yes { background: #d1fae5; color: var(--accent-yes); }
+  .badge-no  { background: #f1f5f9; color: var(--accent-no); }
+
+  .loading, .error {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .error { color: #b91c1c; }
+
+  footer {
+    padding: 1.5rem 2.5rem;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 640px) {
+    body { padding: 0; }
+    .container { border-radius: 0; }
+    header, .toolbar, .content, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .markdown table { font-size: 0.82rem; }
+    .markdown th, .markdown td { padding: 0.5rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📋 Inventário de Telas & Rotas</h1>
+    <p>
+      Plataforma Aplicação Modelo · Frontend Next.js (App Router)<br />
+      Fonte editável:
+      <a href="INVENTARIO_TELAS_ROTAS.mmd" target="_blank" rel="noopener">INVENTARIO_TELAS_ROTAS.mmd</a>
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      id="search"
+      placeholder="🔍 Filtrar por rota, arquivo ou propósito..."
+      autocomplete="off"
+    />
+    <span class="counter" id="counter">Carregando...</span>
+  </div>
+
+  <div class="content">
+    <div id="status" class="loading">Carregando INVENTARIO_TELAS_ROTAS.mmd…</div>
+    <article id="output" class="markdown hidden"></article>
+  </div>
+
+  <footer>
+    Abra este <code>index.html</code> no navegador para leitura rápida.
+    Para gerar relatórios automatizados, crie um script que extraia títulos/descrições de cada <code>page.tsx</code>.
+  </footer>
+</div>
+
+<script>
+/* =========================================================
+   Conteúdo do .mmd embutido como fallback
+   (usado caso o fetch falhe por política CORS / file://)
+   ========================================================= */
+const FALLBACK_MD = `# Inventário de Telas e Rotas
+
+Este arquivo lista as rotas da aplicação frontend (Next.js app router em \`frontend/src/app\`) com o caminho da implementação e observações rápidas. Use este inventário para planejar análises, mocks e templates de tela.
+
+| Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+|---|---|---|---|
+| / | frontend/src/app/page.tsx | Landing / Portal público com seções dinâmicas e conteúdo institucional | não |
+| /home | frontend/src/app/home/page.tsx | Página /home (conteúdo público/sem login) | não |
+| /feed | frontend/src/app/feed/page.tsx | Timeline pública da comunidade (Pet Stars) | não |
+| /login | frontend/src/app/login/page.tsx | Acesso / autenticação de operadores e tutores | não |
+| /register | frontend/src/app/register/page.tsx | Cadastro público de tutores (registro) | não |
+| /unauthorized | frontend/src/app/unauthorized/page.tsx | Página de acesso negado | não |
+| /auth/change-password | frontend/src/app/auth/change-password/page.tsx | Alterar senha / segurança da conta | sim |
+| /unidades/cadastro | frontend/src/app/unidades/cadastro/page.tsx | Credenciamento público de unidades (registro) | não |
+
+## Área Admin (/admin)
+
+| Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+|---|---|---|---|
+| /admin | frontend/src/app/admin/page.tsx | Painel de Controle Municipal — visão geral, estatísticas e atalhos administrativos | sim |
+| /admin/adoptions | frontend/src/app/admin/adoptions/page.tsx | Gestão de Adoções — triagem e aprovação de adoções | sim |
+| /admin/campaigns | frontend/src/app/admin/campaigns/page.tsx | Campanhas — calendário e gerenciamento de ações públicas | sim |
+| /admin/zoonoses | frontend/src/app/admin/zoonoses/page.tsx | Vigilância Epidemiológica — notificação e gestão | sim |
+| /admin/network | frontend/src/app/admin/network/page.tsx | Orquestração de Rede — gerencia topologia, subunidades, usuários e módulos | sim |
+| /admin/exams | frontend/src/app/admin/exams/page.tsx | Exames & Laudos — solicitação e acompanhamento | sim |
+| /admin/users | frontend/src/app/admin/users/page.tsx | Gestão de Usuários — criação, edição e resets | sim |
+| /admin/locations | frontend/src/app/admin/locations/page.tsx | Unidades de Atendimento — CRUD e configuração | sim |
+| /admin/deaths | frontend/src/app/admin/deaths/page.tsx | Registro de Óbitos — encerramento e estatísticas | sim |
+| /admin/appointments | frontend/src/app/admin/appointments/page.tsx | Agendamentos e gestão de filas | sim |
+| /admin/units | frontend/src/app/admin/units/page.tsx | Rede de Unidades — moderação e credenciamento | sim |
+| /admin/alerts | frontend/src/app/admin/alerts/page.tsx | Central de Alertas — monitoramento de incidentes | sim |
+| /admin/hospitalization | frontend/src/app/admin/hospitalization/page.tsx | Internações — gestão de leitos e ocupação | sim |
+| /admin/reception | frontend/src/app/admin/reception/page.tsx | Recepção / cadastro rápido e triagem | sim |
+| /admin/attendance/:id | frontend/src/app/admin/attendance/[id]/page.tsx | Atendimento Clínico — formulário e encerramento | sim |
+| /admin/feed | frontend/src/app/admin/feed/page.tsx | Feed interno / moderação de publicações | sim |
+| /admin/inventory | frontend/src/app/admin/inventory/page.tsx | Logística & Estoque — lotes, movimentações e dispensas | sim |
+| /admin/inventory/products | frontend/src/app/admin/inventory/products/page.tsx | Catálogo de Produtos — gerenciamento de itens | sim |
+| /admin/hotel | frontend/src/app/admin/hotel/page.tsx | Hotelaria & Canil — gestão de hospedagem animal | sim |
+| /admin/permissions | frontend/src/app/admin/permissions/page.tsx | Gestão de Acessos — papéis e matrizes de permissão | sim |
+| /admin/tutores | frontend/src/app/admin/tutores/page.tsx | Censo de Tutores — listagem e gestão de cidadãos | sim |
+| /admin/tutores/:id | frontend/src/app/admin/tutores/[id]/page.tsx | Perfil do Tutor — detalhes e histórico (dinâmica) | sim |
+| /admin/team | frontend/src/app/admin/team/page.tsx | Equipe — gestão de profissionais e contatos | sim |
+| /admin/profile | frontend/src/app/admin/profile/page.tsx | Meu Perfil — dados do usuário e segurança | sim |
+| /admin/triage | frontend/src/app/admin/triage/page.tsx | Gestão de Triagem — fila de espera e histórico | sim |
+| /admin/schedules | frontend/src/app/admin/schedules/page.tsx | Horários / agendas e plantões | sim |
+| /admin/pets | frontend/src/app/admin/pets/page.tsx | Censo Animal / Meus Pacientes — listagem e gestão | sim |
+| /admin/pets/:id | frontend/src/app/admin/pets/[id]/page.tsx | Prontuário do Pet — histórico clínico (dinâmica) | sim |
+| /admin/settings/homepage | frontend/src/app/admin/settings/homepage/page.tsx | Gestão do Portal — personalização da home | sim |
+
+## Arquivos de suporte
+
+| Artefato | Arquivo (caminho) | Observações |
+|---|---|---|
+| layout root | frontend/src/app/layout.tsx | RootLayout — header, nav, providers |
+| not-found | frontend/src/app/not-found.tsx | Página 404 personalizada |
+| globals css | frontend/src/app/globals.css | Estilos globais / tokens iniciais |
+
+## Observações e próximos passos sugeridos
+
+- Acrescentar coluna de \`auth\` (sim/não) lendo checks de \`AuthContext\` e guards.
+- Extrair títulos/descrições lendo cada \`page.tsx\` para preencher propósito e responsáveis.
+- Gerar automaticamente entradas no Storybook e mocks MSW por rota.
+`;
+
+/* =========================================================
+   Renderização
+   ========================================================= */
+const statusEl  = document.getElementById('status');
+const outputEl  = document.getElementById('output');
+const searchEl  = document.getElementById('search');
+const counterEl = document.getElementById('counter');
+
+function renderMarkdown(md) {
+  outputEl.innerHTML = marked.parse(md);
+  enhanceTables();
+  updateCounter();
+  statusEl.classList.add('hidden');
+  outputEl.classList.remove('hidden');
+}
+
+/* Transforma a célula "Auth" em badges coloridos */
+function enhanceTables() {
+  outputEl.querySelectorAll('table').forEach(table => {
+    const headers = [...table.querySelectorAll('thead th')].map(th =>
+      th.textContent.trim().toLowerCase()
+    );
+    const authIdx = headers.findIndex(h => h === 'auth');
+
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = tr.querySelectorAll('td');
+      if (authIdx >= 0 && cells[authIdx]) {
+        const raw = cells[authIdx].textContent.trim().toLowerCase();
+        const isYes = raw === 'sim' || raw === 'yes' || raw === 'true';
+        cells[authIdx].innerHTML = isYes
+          ? '<span class="badge badge-yes">🔒 Autenticado</span>'
+          : '<span class="badge badge-no">🌐 Público</span>';
+      }
+      // Deixa o caminho do arquivo como <code>
+      if (cells[1]) {
+        const txt = cells[1].textContent.trim();
+        if (txt.includes('/') || txt.includes('.')) {
+          cells[1].innerHTML = `<code>${txt}</code>`;
+        }
+      }
+      // Rota HTTP em destaque
+      if (cells[0]) {
+        const txt = cells[0].textContent.trim();
+        if (txt.startsWith('/')) {
+          cells[0].innerHTML = `<strong style="color:var(--primary-teal)">${txt}</strong>`;
+        }
+      }
+    });
+  });
+}
+
+/* Filtro de busca: esconde linhas que não batem */
+function updateCounter() {
+  const term = (searchEl.value || '').toLowerCase().trim();
+  let total = 0, visible = 0;
+
+  outputEl.querySelectorAll('tbody tr').forEach(tr => {
+    total++;
+    const text = tr.textContent.toLowerCase();
+    const match = !term || text.includes(term);
+    tr.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+
+  counterEl.innerHTML = term
+    ? `<strong>${visible}</strong> de <strong>${total}</strong> rotas correspondem`
+    : `<strong>${total}</strong> rotas catalogadas`;
+}
+
+searchEl.addEventListener('input', updateCounter);
+
+/* Carrega o .mmd; se falhar, usa o fallback embutido */
+async function loadSource() {
+  try {
+    const res = await fetch('INVENTARIO_TELAS_ROTAS.mmd', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    // Sanity check: se vier HTML de erro (ex: 404 page), usa fallback
+    if (text.trim().startsWith('<!')) throw new Error('Resposta não é texto puro');
+    renderMarkdown(text);
+  } catch (err) {
+    console.warn('Fetch falhou, usando fallback embutido:', err.message);
+    renderMarkdown(FALLBACK_MD);
+  }
+}
+
+loadSource();
+</script>
+
+</body>
+</html>

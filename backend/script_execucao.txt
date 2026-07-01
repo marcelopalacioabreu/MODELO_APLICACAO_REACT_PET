@@ -1,0 +1,15 @@
+## Dentro de backend/src
+
+## Desenvolvimento
+npm install
+npm run dev
+
+## Produção
+node server.js
+
+## Dentro da raíz do repositório
+
+## Desenvolvimento
+npm --prefix backend install
+npm --prefix backend run dev
+

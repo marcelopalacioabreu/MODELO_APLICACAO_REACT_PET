@@ -1,0 +1,69 @@
+# Inventário de Telas e Rotas
+
+Este arquivo lista as rotas da aplicação frontend (Next.js app router em `frontend/src/app`) com o caminho da implementação e observações rápidas. Use este inventário para planejar análises, mocks e templates de tela.
+
+## Rotas Públicas
+
+| Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+|---|---|---|---|
+| / | frontend/src/app/page.tsx | Landing / Portal público com seções dinâmicas e conteúdo institucional | não |
+| /home | frontend/src/app/home/page.tsx | Página /home (conteúdo público/sem login) | não |
+| /feed | frontend/src/app/feed/page.tsx | Timeline pública da comunidade (Pet Stars) | não |
+| /login | frontend/src/app/login/page.tsx | Acesso / autenticação de operadores e tutores | não |
+| /register | frontend/src/app/register/page.tsx | Cadastro público de tutores (registro) | não |
+| /unauthorized | frontend/src/app/unauthorized/page.tsx | Página de acesso negado | não |
+| /unidades/cadastro | frontend/src/app/unidades/cadastro/page.tsx | Credenciamento público de unidades (registro) | não |
+
+## Rotas Autenticadas (usuário logado)
+
+| Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+|---|---|---|---|
+| /auth/change-password | frontend/src/app/auth/change-password/page.tsx | Alterar senha / segurança da conta | sim |
+
+## Área Admin (/admin)
+
+| Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+|---|---|---|---|
+| /admin | frontend/src/app/admin/page.tsx | Painel de Controle Municipal — visão geral, estatísticas e atalhos administrativos | sim |
+| /admin/adoptions | frontend/src/app/admin/adoptions/page.tsx | Gestão de Adoções — triagem e aprovação de adoções | sim |
+| /admin/campaigns | frontend/src/app/admin/campaigns/page.tsx | Campanhas — calendário e gerenciamento de ações públicas | sim |
+| /admin/zoonoses | frontend/src/app/admin/zoonoses/page.tsx | Vigilância Epidemiológica — notificação e gestão | sim |
+| /admin/network | frontend/src/app/admin/network/page.tsx | Orquestração de Rede — gerencia topologia, subunidades, usuários e módulos | sim |
+| /admin/exams | frontend/src/app/admin/exams/page.tsx | Exames & Laudos — solicitação e acompanhamento | sim |
+| /admin/users | frontend/src/app/admin/users/page.tsx | Gestão de Usuários — criação, edição e resets | sim |
+| /admin/locations | frontend/src/app/admin/locations/page.tsx | Unidades de Atendimento — CRUD e configuração | sim |
+| /admin/deaths | frontend/src/app/admin/deaths/page.tsx | Registro de Óbitos — encerramento e estatísticas | sim |
+| /admin/appointments | frontend/src/app/admin/appointments/page.tsx | Agendamentos e gestão de filas | sim |
+| /admin/units | frontend/src/app/admin/units/page.tsx | Rede de Unidades — moderação e credenciamento | sim |
+| /admin/alerts | frontend/src/app/admin/alerts/page.tsx | Central de Alertas — monitoramento de incidentes | sim |
+| /admin/hospitalization | frontend/src/app/admin/hospitalization/page.tsx | Internações — gestão de leitos e ocupação | sim |
+| /admin/reception | frontend/src/app/admin/reception/page.tsx | Recepção / cadastro rápido e triagem | sim |
+| /admin/attendance/:id | frontend/src/app/admin/attendance/[id]/page.tsx | Atendimento Clínico — formulário e encerramento | sim |
+| /admin/feed | frontend/src/app/admin/feed/page.tsx | Feed interno / moderação de publicações | sim |
+| /admin/inventory | frontend/src/app/admin/inventory/page.tsx | Logística & Estoque — lotes, movimentações e dispensas | sim |
+| /admin/inventory/products | frontend/src/app/admin/inventory/products/page.tsx | Catálogo de Produtos — gerenciamento de itens | sim |
+| /admin/hotel | frontend/src/app/admin/hotel/page.tsx | Hotelaria & Canil — gestão de hospedagem animal | sim |
+| /admin/permissions | frontend/src/app/admin/permissions/page.tsx | Gestão de Acessos — papéis e matrizes de permissão | sim |
+| /admin/tutores | frontend/src/app/admin/tutores/page.tsx | Censo de Tutores — listagem e gestão de cidadãos | sim |
+| /admin/tutores/:id | frontend/src/app/admin/tutores/[id]/page.tsx | Perfil do Tutor — detalhes e histórico (dinâmica) | sim |
+| /admin/team | frontend/src/app/admin/team/page.tsx | Equipe — gestão de profissionais e contatos | sim |
+| /admin/profile | frontend/src/app/admin/profile/page.tsx | Meu Perfil — dados do usuário e segurança | sim |
+| /admin/triage | frontend/src/app/admin/triage/page.tsx | Gestão de Triagem — fila de espera e histórico | sim |
+| /admin/schedules | frontend/src/app/admin/schedules/page.tsx | Horários / agendas e plantões | sim |
+| /admin/pets | frontend/src/app/admin/pets/page.tsx | Censo Animal / Meus Pacientes — listagem e gestão | sim |
+| /admin/pets/:id | frontend/src/app/admin/pets/[id]/page.tsx | Prontuário do Pet — histórico clínico (dinâmica) | sim |
+| /admin/settings/homepage | frontend/src/app/admin/settings/homepage/page.tsx | Gestão do Portal — personalização da home | sim |
+
+## Arquivos de suporte
+
+| Artefato | Arquivo (caminho) | Observações |
+|---|---|---|
+| layout root | frontend/src/app/layout.tsx | RootLayout — header, nav, providers |
+| not-found | frontend/src/app/not-found.tsx | Página 404 personalizada |
+| globals css | frontend/src/app/globals.css | Estilos globais / tokens iniciais |
+
+## Observações e próximos passos sugeridos
+
+- Acrescentar coluna de `auth` (sim/não) lendo checks de `AuthContext` e guards.
+- Extrair títulos/descrições lendo cada `page.tsx` para preencher propósito e responsáveis.
+- Gerar automaticamente entradas no Storybook e mocks MSW por rota.

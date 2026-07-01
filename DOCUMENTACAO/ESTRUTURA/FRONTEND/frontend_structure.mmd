@@ -1,0 +1,95 @@
+%% Frontend structural diagrams for Plataforma Aplicação Modelo (editable, mermaid)
+%% File: DOCUMENTACAO/ESTRUTURA/frontend_structure.mmd
+
+%% Diagram 1: Arquitetura geral (Next.js app router, componentes, contexts, services)
+flowchart TB
+  subgraph FRONTEND["Next.js 14 - Frontend"]
+    subgraph APPDir["src/app"]
+      Layout["layout.tsx\nRootLayout"]
+      Page["page.tsx\nHomePage"]
+      subgraph ROUTES["Rotas (app/)"]
+        Home["/ (Home)"]
+        Admin["/admin (Área Admin)"]
+        Auth["/auth/* (Login, Register, Change PW)"]
+      end
+    end
+
+    subgraph COMPONENTS["src/components"]
+      HomeComp["home/*\n(LandingNavbar, LandingHero, etc.)"]
+      AuthComp["auth/*\n(Login forms)"]
+      LayoutComp["layout/*\n(Nav, Sidebar)"]
+      Modals["modals/*"]
+    end
+
+    Contexts["AuthContext.tsx\n(Autenticação, tokens, socket.io)"]
+    Services["services/apiService.ts\n(axios wrapper, endpoints)"]
+    Utils["utils/*\n(textParser, cpfUtils)"]
+    Dependencies["React / Next.js / Tailwind / Framer Motion / Socket.IO client / Recharts / axios / react-hook-form / toast"]
+  end
+
+  Page --> HomeComp
+  Layout --> Contexts
+  Layout --> Services
+  Contexts --> Services
+  Services --> Backend["Backend API - HTTP + socket.io"]
+  Contexts --> Dependencies
+  COMPONENTS --> Dependencies
+
+%% Diagram 2: Componentes da landing page (grouping)
+flowchart TB
+  subgraph HOME[src/components/home]
+    LandingNavbar
+    LandingHero
+    LostPetBanner
+    PetStarsFeed
+    LostPetsSection
+    AdoptionSection
+    AdoptionStatusTracker
+    EngagementCards
+    TransparencyStats
+    LandingFooter
+    ParticlesBackground
+    AdoptionModal
+  end
+
+%% Diagram 3: Fluxo de autenticação (sequência)
+sequenceDiagram
+  participant U as Usuário
+  participant LC as LoginComponent
+  participant API as apiService
+  participant BE as Backend
+  participant AUTH as AuthContext
+  U->>LC: submete credenciais
+  LC->>API: POST /auth/login
+  API->>BE: requisição HTTP
+  BE-->>API: retorna {accessToken, refreshToken}
+  LC->>AUTH: AUTH.login(tokens)
+  AUTH->>LocalStorage: set token / refreshToken
+  AUTH->>API: GET /auth/me (getMe)
+  API->>BE: requisição HTTP
+  BE-->>API: user data
+  AUTH->>Socket: conecta via socket.io (auth token)
+  AUTH-->>Router: push /admin
+
+%% Diagram 4: Principais chamadas API (resumo de responsabilidades)
+flowchart LR
+  subgraph API
+    AuthAPI["Auth endpoints<br/>/login, /me, /logout"]
+    PetsAPI["/pets, /pets/lost, /pets/adoptable"]
+    FeedAPI["/feed, /feed/public"]
+    AdminAPI["/admin/*<br/>(roles, users, permissions)"]
+    InventoryAPI["/inventory/*"]
+    AppointmentsAPI["/appointments, /triage"]
+  end
+
+  Services --> AuthAPI
+  Services --> PetsAPI
+  Services --> FeedAPI
+  Services --> AdminAPI
+  Services --> InventoryAPI
+  Services --> AppointmentsAPI
+
+%% Diagram 5: Resumo de papéis dos artefatos
+%% (tabela legível a seguir - manter também no index.html)
+
+%% End of file

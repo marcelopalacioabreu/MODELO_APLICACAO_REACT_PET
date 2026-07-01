@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Estrutura Frontend — Plataforma Aplicação Modelo</title>
+    <style>
+      body { font-family: Inter, system-ui, sans-serif; margin: 24px; color: #0f172a; }
+      header { margin-bottom: 16px }
+      .diagram { margin: 24px 0; padding: 12px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 4px rgba(2,6,23,0.06); }
+      pre.source { background:#0f172a;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto }
+      table { border-collapse: collapse; width: 100%; margin-top: 12px }
+      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left }
+    </style>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+      window.mermaid = mermaid;
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Estrutura do Frontend — Plataforma Aplicação Modelo</h1>
+      <p>Este documento contém diagramas mermaid que descrevem arquitetura, componentes, fluxos de autenticação e responsabilidades de API. O arquivo fonte legível está em <a href="frontend_structure.mmd">frontend_structure.mmd</a>.</p>
+    </header>
+
+    <section class="diagram">
+      <h2>Arquitetura geral (Next.js, app router)</h2>
+      <div class="mermaid">
+flowchart TB
+  subgraph FRONTEND["Next.js 14 - Frontend"]
+    subgraph APPDir["src/app"]
+      Layout["layout.tsx\nRootLayout"]
+      Page["page.tsx\nHomePage"]
+      subgraph ROUTES["Rotas (app/)"]
+        Home["/ (Home)"]
+        Admin["/admin (Área Admin)"]
+        Auth["/auth/* (Login, Register, Change PW)"]
+      end
+    end
+
+    subgraph COMPONENTS["src/components"]
+      HomeComp["home/*\n(LandingNavbar, LandingHero, etc.)"]
+      AuthComp["auth/*\n(Login forms)"]
+      LayoutComp["layout/*\n(Nav, Sidebar)"]
+      Modals["modals/*"]
+    end
+
+    Contexts["AuthContext.tsx\n(Autenticação, tokens, socket.io)"]
+    Services["services/apiService.ts\n(axios wrapper, endpoints)"]
+    Utils["utils/*\n(textParser, cpfUtils)"]
+    Dependencies["React / Next.js / Tailwind / Framer Motion / Socket.IO client / Recharts / axios / react-hook-form / toast"]
+  end
+
+  Page --> HomeComp
+  Layout --> Contexts
+  Layout --> Services
+  Contexts --> Services
+  Services --> Backend["Backend API - HTTP + socket.io"]
+  Contexts --> Dependencies
+  COMPONENTS --> Dependencies
+      </div>
+    </section>
+
+    <section class="diagram">
+      <h2>Componentes da landing page</h2>
+      <div class="mermaid">
+flowchart TB
+  subgraph HOME[src/components/home]
+    LandingNavbar
+    LandingHero
+    LostPetBanner
+    PetStarsFeed
+    LostPetsSection
+    AdoptionSection
+    AdoptionStatusTracker
+    EngagementCards
+    TransparencyStats
+    LandingFooter
+    ParticlesBackground
+    AdoptionModal
+  end
+      </div>
+    </section>
+
+    <section class="diagram">
+      <h2>Fluxo de autenticação (sequência)</h2>
+      <div class="mermaid">
+sequenceDiagram
+  participant U as Usuário
+  participant LC as LoginComponent
+  participant API as apiService
+  participant BE as Backend
+  participant AUTH as AuthContext
+  U->>LC: submete credenciais
+  LC->>API: POST /auth/login
+  API->>BE: requisição HTTP
+  BE-->>API: retorna {accessToken, refreshToken}
+  LC->>AUTH: AUTH.login(tokens)
+  AUTH->>LocalStorage: set token / refreshToken
+  AUTH->>API: GET /auth/me (getMe)
+  API->>BE: requisição HTTP
+  BE-->>API: user data
+  AUTH->>Socket: conecta via socket.io (auth token)
+  AUTH-->>Router: push /admin
+      </div>
+    </section>
+
+    <section>
+      <h2>Chamadas API - responsabilidades (resumo)</h2>
+      <pre class="source">services/apiService.ts
+  • Autenticação: /auth (login, me, logout, change-password)
+  • Pets: /pets, /pets/lost, /pets/adoptable
+  • Feed: /feed (public/private)
+  • Admin: /admin/* (roles, users, permissions)
+  • Inventory: /inventory/* (products, stock, transactions)
+  • Hotelaria: /beds
+  • Appointments & Triage: /appointments, /triage
+      </pre>
+
+      <h3>Tabela resumida de artefatos e papéis</h3>
+      <table>
+        <thead><tr><th>Artefato</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td>`src/app`</td><td>Rotas (app router), entradas `layout.tsx` e `page.tsx`</td></tr>
+          <tr><td>`src/components`</td><td>UI reutilizável (landing, auth, layout, modals)</td></tr>
+          <tr><td>`src/contexts/AuthContext.tsx`</td><td>Gerencia sessão, token, socket e redirecionamentos</td></tr>
+          <tr><td>`src/services/apiService.ts`</td><td>Axios wrapper, interceptors e chamadas organizadas por domínio</td></tr>
+          <tr><td>`src/utils`</td><td>Helpers (textParser, cpfUtils)</td></tr>
+          <tr><td>`package.json`</td><td>Dependências: Next.js, React, Tailwind, Framer Motion, Socket.IO client, Recharts, axios, etc.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="diagram">
+      <h2>Diagrama de dependências NPM</h2>
+      <div class="mermaid">
+graph TD
+  A[Next.js 14] --> B[React 18]
+  A --> C[Tailwind CSS]
+  A --> D[TypeScript]
+  B --> E[framer-motion]
+  B --> F[react-dom]
+  C --> G[postcss]
+  C --> H[autoprefixer]
+  A --> I[socket.io-client]
+  A --> J[recharts]
+  A --> K[axios]
+  A --> L[react-hook-form]
+  A --> M[react-toastify]
+  A --> N[sweetalert2]
+  K --> O[js-cookie]
+  B --> P[react-icons]
+  B --> Q[lucide-react]
+  R[DevDeps] --> D
+  R --> G
+  R --> H
+  R --> S[eslint]
+      </div>
+
+      <h3>Descrição das dependências principais</h3>
+      <table>
+        <thead><tr><th>Pacote</th><th>Versão</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td>next</td><td>14.2.3</td><td>Framework React com App Router e SSR/SSG; roteamento e build.</td></tr>
+          <tr><td>react / react-dom</td><td>18.x</td><td>Biblioteca UI e renderer.</td></tr>
+          <tr><td>typescript</td><td>5.4.5 (dev)</td><td>Tipagem estática e checagem durante build.</td></tr>
+          <tr><td>tailwindcss</td><td>3.4.3 (dev)</td><td>Framework utilitário CSS para estilos rápidos e tema.</td></tr>
+          <tr><td>postcss / autoprefixer</td><td>dev</td><td>Build CSS pipeline para Tailwind e compatibilidade de navegadores.</td></tr>
+          <tr><td>framer-motion</td><td>11.1.7</td><td>Animações e motion para UI interativa.</td></tr>
+          <tr><td>socket.io-client</td><td>4.7.5</td><td>Conexão em tempo real com backend (sockets autenticados).</td></tr>
+          <tr><td>recharts</td><td>2.12.5</td><td>Gráficos e visualização de dados.</td></tr>
+          <tr><td>axios</td><td>1.6.8</td><td>Cliente HTTP utilizado por `services/apiService.ts`.</td></tr>
+          <tr><td>react-hook-form</td><td>7.51.3</td><td>Gerenciamento de formulários reativos e validação.</td></tr>
+          <tr><td>react-toastify</td><td>10.0.5</td><td>Notificações toast na UI.</td></tr>
+          <tr><td>sweetalert2</td><td>11.10.8</td><td>Alertas modais bonitos e confirm dialogs.</td></tr>
+          <tr><td>js-cookie</td><td>3.0.5</td><td>Ops. cookies (login/refresh) — usado para armazenamento opcional.</td></tr>
+          <tr><td>react-icons / lucide-react / @heroicons/react</td><td>variadas</td><td>Bibliotecas de ícones para interface (SVGs prontos).</td></tr>
+          <tr><td>uuid</td><td>9.0.1</td><td>Geração de IDs únicos (client-side).</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Tema / Variáveis principais (Tailwind)</h3>
+      <p>As cores principais estendidas em <strong>tailwind.config.ts</strong> e <strong>src/app/globals.css</strong>:</p>
+      <ul>
+        <li><strong>--primary-green / primary-green:</strong> #006644</li>
+        <li><strong>--primary-teal / primary-teal:</strong> #004d40</li>
+        <li><strong>bg-light / --bg-light:</strong> #f8fafc / #f4f4f4 (variações)</li>
+        <li>Também existem animações e utilitários: `fadeIn`, `slideUp` e background gradients.</li>
+      </ul>
+    </section>
+
+
+    <section style="margin-top:24px">
+      <h2>Como inspecionar / editar</h2>
+      <ol>
+        <li>Edite o arquivo fonte legível: <a href="frontend_structure.mmd">frontend_structure.mmd</a>.</li>
+        <li>Abra `index.html` no navegador (duplo-clique); os diagramas são renderizados pelo Mermaid CDN.</li>
+        <li>Se quiser atualizar, copie/cole o bloco mermaid do `.mmd` para dentro de um dos <code>div.mermaid</code> no `index.html` (ou reabrir).</li>
+      </ol>
+    </section>
+  </body>
+</html>

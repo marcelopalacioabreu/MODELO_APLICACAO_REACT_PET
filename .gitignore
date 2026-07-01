@@ -1,0 +1,37 @@
+# Dependências
+node_modules/
+.npm/
+.eslintcache
+
+# Volumes de Dados (CRÍTICO: Nunca versionar dados locais)
+mongodb_data/
+uploads_data/
+nginx/ssl/
+backend/public/uploads/
+
+# Ambiente e Segredos
+.env
+/backend/.env
+/frontend/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# Next.js
+.next/
+out/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDEs e Sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

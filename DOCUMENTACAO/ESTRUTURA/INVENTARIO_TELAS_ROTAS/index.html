@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inventário Telas & Rotas — Plataforma Saúde Animal</title>
+    <style>
+      body { font-family: Inter, system-ui, sans-serif; margin: 24px; color: #0f172a; }
+      header { margin-bottom: 16px }
+      .diagram { margin: 24px 0; padding: 12px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 4px rgba(2,6,23,0.06); }
+      pre.source { background:#0f172a;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto }
+      table { border-collapse: collapse; width: 100%; margin-top: 12px }
+      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left }
+    </style>
+    <!-- Load UMD builds so file:// opening works reliably in browsers -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      try { mermaid.initialize({ startOnLoad: false, theme: 'default' }); } catch (e) { console.warn('mermaid load failed', e); }
+
+      function renderFromText(text) {
+        const container = document.getElementById('md-content');
+        if (!container) return;
+        const md = window.markdownit ? window.markdownit({ html: true, linkify: true, typographer: true }) : null;
+        container.innerHTML = md ? md.render(text) : '<pre class="source">' + escapeHtml(text) + '</pre>';
+
+        container.querySelectorAll('pre > code').forEach((codeEl) => {
+          const classList = codeEl.className || '';
+          const code = codeEl.textContent || '';
+          const looksLikeMermaid = classList.includes('language-mermaid') || classList.includes('lang-mermaid') || /^\s*(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|gantt)/m.test(code);
+          if (looksLikeMermaid) {
+            const div = document.createElement('div'); div.className = 'mermaid'; div.textContent = code; const pre = codeEl.parentElement; pre && pre.replaceWith(div);
+          }
+        });
+
+        try { window.mermaid && window.mermaid.init(undefined, container.querySelectorAll('.mermaid')); } catch (e) { console.warn('mermaid init failed', e); }
+      }
+
+      function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const inline = document.getElementById('mmd-inline');
+        if (inline && inline.textContent && inline.textContent.trim().length > 0) {
+          renderFromText(inline.textContent);
+          return;
+        }
+
+        // try fetch (works when served), otherwise show file picker
+        fetch('INVENTARIO_TELAS_ROTAS.mmd').then(res => {
+          if (!res.ok) throw new Error('no-fetch');
+          return res.text();
+        }).then(text => renderFromText(text)).catch(() => {
+          const container = document.getElementById('md-content');
+          if (!container) return;
+          container.textContent = 'Selecione o arquivo .mmd local ou use a versão embutida.';
+          const input = document.createElement('input'); input.type = 'file'; input.accept = '.mmd,.md,.markdown'; input.style.display = 'block'; input.style.marginTop = '8px';
+          input.addEventListener('change', (ev) => {
+            const f = ev.target.files && ev.target.files[0]; if (!f) return; const reader = new FileReader();
+            reader.onload = () => renderFromText(reader.result || ''); reader.readAsText(f, 'utf-8');
+          });
+          container.appendChild(input);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Inventário de Telas & Rotas — Frontend</h1>
+      <p>Fonte editável: <a href="INVENTARIO_TELAS_ROTAS.mmd">INVENTARIO_TELAS_ROTAS.mmd</a></p>
+    </header>
+
+    <section class="diagram">
+      <h2>Tabela de rotas</h2>
+      <div id="md-content" class="source">Carregando INVENTARIO_TELAS_ROTAS.mmd…</div>
+      <!-- Inline fallback: conteúdo do INVENTARIO_TELAS_ROTAS.mmd embutido para suportar abertura via file:// -->
+      <script id="mmd-inline" type="text/plain" style="display:none">
+    %% Inventário de Telas e Rotas - Plataforma
+    %% File: DOCUMENTACAO/ESTRUTURA/INVENTARIO_TELAS_ROTAS/INVENTARIO_TELAS_ROTAS.mmd
+    %% Gerado automaticamente: lista de rotas do Next.js app (src/app)
+
+    # Inventário de Telas e Rotas
+
+    Este arquivo lista as rotas da aplicação frontend (Next.js app router em `frontend/src/app`) com o caminho da implementação e observações rápidas. Use este inventário para planejar análises, mocks e templates de tela.
+
+    | Rota HTTP | Arquivo (caminho) | Propósito | Auth |
+    |---|---|---|---|
+    | / | frontend/src/app/page.tsx | Landing / Portal público com seções dinâmicas e conteúdo institucional | não |
+    | /home | frontend/src/app/home/page.tsx | Página /home (conteúdo público/sem login) | não |
+    | /feed | frontend/src/app/feed/page.tsx | Timeline pública da comunidade (Pet Stars) | não |
+    | /login | frontend/src/app/login/page.tsx | Acesso / autenticação de operadores e tutores | não |
+    | /register | frontend/src/app/register/page.tsx | Cadastro público de tutores (registro) | não |
+    | /unauthorized | frontend/src/app/unauthorized/page.tsx | Página de acesso negado | não |
+    | /auth/change-password | frontend/src/app/auth/change-password/page.tsx | Alterar senha / segurança da conta | sim |
+    | /unidades/cadastro | frontend/src/app/unidades/cadastro/page.tsx | Credenciamento público de unidades (registro) | não |
+
+    ## Área Admin (/admin)
+    | /admin | frontend/src/app/admin/page.tsx | Painel de Controle Municipal — visão geral, estatísticas e atalhos administrativos | sim |
+    | /admin/adoptions | frontend/src/app/admin/adoptions/page.tsx | Gestão de Adoções — triagem e aprovação de adoções | sim |
+    | /admin/campaigns | frontend/src/app/admin/campaigns/page.tsx | Campanhas — calendário e gerenciamento de ações públicas | sim |
+    | /admin/zoonoses | frontend/src/app/admin/zoonoses/page.tsx | Vigilância Epidemiológica — notificação e gestão | sim |
+    | /admin/network | frontend/src/app/admin/network/page.tsx | Orquestração de Rede — gerencia topologia, subunidades, usuários e módulos | sim |
+    | /admin/exams | frontend/src/app/admin/exams/page.tsx | Exames & Laudos — solicitação e acompanhamento | sim |
+    | /admin/users | frontend/src/app/admin/users/page.tsx | Gestão de Usuários — criação, edição e resets | sim |
+    | /admin/locations | frontend/src/app/admin/locations/page.tsx | Unidades de Atendimento — CRUD e configuração | sim |
+    | /admin/deaths | frontend/src/app/admin/deaths/page.tsx | Registro de Óbitos — encerramento e estatísticas | sim |
+    | /admin/appointments | frontend/src/app/admin/appointments/page.tsx | Agendamentos e gestão de filas | sim |
+    | /admin/units | frontend/src/app/admin/units/page.tsx | Rede de Unidades — moderação e credenciamento | sim |
+    | /admin/alerts | frontend/src/app/admin/alerts/page.tsx | Central de Alertas — monitoramento de incidentes | sim |
+    | /admin/hospitalization | frontend/src/app/admin/hospitalization/page.tsx | Internações — gestão de leitos e ocupação | sim |
+    | /admin/reception | frontend/src/app/admin/reception/page.tsx | Recepção / cadastro rápido e triagem | sim |
+    | /admin/attendance/:id | frontend/src/app/admin/attendance/[id]/page.tsx | Atendimento Clínico — formulário e encerramento | sim |
+    | /admin/feed | frontend/src/app/admin/feed/page.tsx | Feed interno / moderação de publicações | sim |
+    | /admin/inventory | frontend/src/app/admin/inventory/page.tsx | Logística & Estoque — lotes, movimentações e dispensas | sim |
+    | /admin/inventory/products | frontend/src/app/admin/inventory/products/page.tsx | Catálogo de Produtos — gerenciamento de itens | sim |
+    | /admin/hotel | frontend/src/app/admin/hotel/page.tsx | Hotelaria & Canil — gestão de hospedagem animal | sim |
+    | /admin/permissions | frontend/src/app/admin/permissions/page.tsx | Gestão de Acessos — papéis e matrizes de permissão | sim |
+    | /admin/tutores | frontend/src/app/admin/tutores/page.tsx | Censo de Tutores — listagem e gestão de cidadãos | sim |
+    | /admin/tutores/:id | frontend/src/app/admin/tutores/[id]/page.tsx | Perfil do Tutor — detalhes e histórico (dinâmica) | sim |
+    | /admin/team | frontend/src/app/admin/team/page.tsx | Equipe — gestão de profissionais e contatos | sim |
+    | /admin/profile | frontend/src/app/admin/profile/page.tsx | Meu Perfil — dados do usuário e segurança | sim |
+    | /admin/triage | frontend/src/app/admin/triage/page.tsx | Gestão de Triagem — fila de espera e histórico | sim |
+    | /admin/schedules | frontend/src/app/admin/schedules/page.tsx | Horários / agendas e plantões | sim |
+    | /admin/pets | frontend/src/app/admin/pets/page.tsx | Censo Animal / Meus Pacientes — listagem e gestão | sim |
+    | /admin/pets/:id | frontend/src/app/admin/pets/[id]/page.tsx | Prontuário do Pet — histórico clínico (dinâmica) | sim |
+    | /admin/settings/homepage | frontend/src/app/admin/settings/homepage/page.tsx | Gestão do Portal — personalização da home | sim |
+
+    ## Arquivos de suporte
+    | Artifact | Arquivo (caminho) | Observações |
+    | layout root | frontend/src/app/layout.tsx | RootLayout — header, nav, providers |
+    | not-found | frontend/src/app/not-found.tsx | Página 404 personalizada |
+    | globals css | frontend/src/app/globals.css | Estilos globais / tokens iniciais |
+
+    ## Observações e próximos passos sugeridos
+    |- Acrescentar coluna de `auth` (sim/não) lendo checks de `AuthContext` e guards.
+    |- Extrair títulos/descrições lendo cada `page.tsx` para preencher propósito e responsáveis.
+    |- Gerar automaticamente entradas no Storybook e mocks MSW por rota.
+
+    %% Fim do inventário
+      </script>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>Como inspecionar</h2>
+      <ol>
+        <li>Edite o arquivo fonte: <a href="INVENTARIO_TELAS_ROTAS.mmd">INVENTARIO_TELAS_ROTAS.mmd</a>.</li>
+        <li>Abra este `index.html` no navegador para leitura rápida.</li>
+        <li>Para gerar relatórios automatizados, posso criar um script que extrai títulos/descrições de cada `page.tsx`.</li>
+      </ol>
+    </section>
+  </body>
+</html>

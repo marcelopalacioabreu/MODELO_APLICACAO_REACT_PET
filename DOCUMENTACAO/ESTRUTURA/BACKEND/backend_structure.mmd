@@ -1,0 +1,66 @@
+%% Backend structural diagrams for Plataforma Aplicação Modelo (editable, mermaid)
+%% File: DOCUMENTACAO/ESTRUTURA/BACKEND/backend_structure.mmd
+
+%% Diagram 1: Arquitetura geral (Express + Mongoose + Redis + Socket.IO)
+flowchart TB
+  subgraph BACKEND[Express Backend]
+    Server["src/server.js\n(App entry, middlewares, socket.io)"]
+    subgraph ROUTES["src/routes"]
+      Auth["auth.js\n(/api/auth/*)"]
+      Pets["pets.js\n(/api/pets/*)"]
+      Admin["admin.js\n(/api/admin/*)"]
+    end
+    subgraph CONTROLLERS["src/controllers"]
+      AuthCtrl[authController.js]
+    end
+    subgraph MODELS["src/models (Mongoose)"]
+      User[User.js]
+      Role[Role.js]
+      Pet[Pet.js]
+      Location[Location.js]
+    end
+    Services["src/services\n(redisService, file, others)"]
+    Utils["src/utils\n(errorResponse, helpers)"]
+  end
+
+  Server --> ROUTES
+  ROUTES --> CONTROLLERS
+  CONTROLLERS --> MODELS
+  CONTROLLERS --> Services
+  MODELS --> MongoDB[(MongoDB - via mongoose)]
+  Services --> Redis[(Redis - sessions, cache)]
+  Server --> Socket[(socket.io + redis-adapter)]
+
+%% Diagram 2: Fluxo de autenticação
+sequenceDiagram
+  participant C as Client (frontend)
+  participant R as Router (/api/auth/login)
+  participant AC as authController
+  participant U as User Model (mongoose)
+  participant RS as Redis Service
+  C->>R: POST /auth/login {cpf|email, password}
+  R->>AC: login(req)
+  AC->>U: User.findOne(...) + matchPassword()
+  U-->>AC: user
+  AC->>RS: setAsync(active_session:userId, sessionId)
+  AC->>AC: jwt.sign(payload)
+  AC-->>R: {token, refreshToken, user}
+  R-->>C: 200 OK
+
+%% Diagram 3: Model groups (high level)
+flowchart TB
+  subgraph ENTITIES[Models grouped]
+    AdminModels[Role, Permission, Functionality]
+    DomainModels[Pet, Tutor, MedicalRecord, Campaign, Location, Inventory*]
+    Audit[AuditLog, UserGamification]
+  end
+
+  AdminModels --> DomainModels
+  DomainModels --> Audit
+
+%% Notes: Migrations
+%% - Não existe um framework de migrations formalizado (TypeORM/knex/migrate).
+%% - Migrations são scripts em `backend/scripts/` (ex: migrate_beds_array.js, seedAdmin.js, runIntegrity.js)
+%% - Rodar scripts: `node scripts/<scriptName>.js` conectando ao MongoDB via mongoose.
+
+%% End of file

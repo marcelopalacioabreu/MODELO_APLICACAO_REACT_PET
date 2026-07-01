@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Estrutura Backend — Plataforma Aplicação Modelo</title>
+    <style>
+      body { font-family: Inter, system-ui, sans-serif; margin: 24px; color: #0f172a; }
+      header { margin-bottom: 16px }
+      .diagram { margin: 24px 0; padding: 12px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 4px rgba(2,6,23,0.06); }
+      pre.source { background:#0f172a;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto }
+      table { border-collapse: collapse; width: 100%; margin-top: 12px }
+      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left }
+    </style>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+      window.mermaid = mermaid;
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Estrutura do Backend — Plataforma Aplicação Modelo</h1>
+      <p>Fonte editável: <a href="backend_structure.mmd">backend_structure.mmd</a></p>
+    </header>
+
+    <section class="diagram">
+      <h2>Arquitetura geral</h2>
+      <div class="mermaid">
+flowchart TB
+  subgraph BACKEND["Express Backend"]
+    Server["src/server.js\n(App entry, middlewares, socket.io)"]
+    subgraph ROUTES["src/routes"]
+      Auth["auth.js\n(/api/auth/*)"]
+      Pets["pets.js\n(/api/pets/*)"]
+      Admin["admin.js\n(/api/admin/*)"]
+    end
+    subgraph CONTROLLERS["src/controllers"]
+      AuthCtrl[authController.js]
+    end
+    subgraph MODELS["src/models (Mongoose)"]
+      User[User.js]
+      Role[Role.js]
+      Pet[Pet.js]
+      Location[Location.js]
+    end
+    Services["src/services\n(redisService, file, others)"]
+    Utils["src/utils\n(errorResponse, helpers)"]
+  end
+
+  Server --> ROUTES
+  ROUTES --> CONTROLLERS
+  CONTROLLERS --> MODELS
+  CONTROLLERS --> Services
+  MODELS --> MongoDB[(MongoDB - via mongoose)]
+  Services --> Redis[(Redis - sessions, cache)]
+  Server --> Socket[(socket.io + redis-adapter)]
+      </div>
+    </section>
+
+    <section class="diagram">
+      <h2>Fluxo de autenticação</h2>
+      <div class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant R as Router
+  participant AC as authController
+  participant U as UserModel
+  participant RS as Redis
+  C->>R: POST /auth/login {cpf/email, password}
+  R->>AC: login(req)
+  AC->>U: findOne + matchPassword
+  U-->>AC: user
+  AC->>RS: setAsync(active_session:userId, sessionId)
+  AC->>AC: jwt.sign(payload)
+  AC-->>R: {token, refreshToken, user}
+  R-->>C: 200 OK
+      </div>
+    </section>
+
+    <section>
+      <h2>Banco de dados e persistência</h2>
+      <p>Banco: MongoDB via <strong>mongoose</strong>. Modelos Mongoose em <strong>src/models</strong>. Persistência está documentada por schemas nos arquivos de modelo; operações CRUD são feitas a partir dos controllers e services.</p>
+      <h3>Coleções / Modelos principais</h3>
+      <pre class="source">User, Role, Permission, Pet, Tutor, Location, MedicalRecord, InventoryTransaction, FeedPost, Campaign, Bed, Appointment, AuditLog, etc.</pre>
+
+      <h3>Migrations & Seeds</h3>
+      <p>Não há framework de migrations formal (ex: migrate, TypeORM). Em vez disso, há scripts ad-hoc em <strong>backend/scripts/</strong> que fazem correções, seeds e transformações (ex: <em>migrate_beds_array.js</em>, <em>seedAdmin.js</em>, <em>runIntegrity.js</em>). Para aplicar uma migração, execute:</p>
+      <pre class="source">node scripts/migrate_beds_array.js</pre>
+
+      <h3>Persistência adicional</h3>
+      <ul>
+        <li><strong>Redis</strong> é usado para sessões ativas, cache e integração com Socket.IO (ver <code>src/services/redisService.js</code>).</li>
+        <li><strong>File uploads</strong> via <code>multer</code>, imagens processadas com <code>sharp</code>.</li>
+        <li><strong>Sessions & Tokens</strong>: JWT para access e refresh tokens; sessão ativa guardada em Redis com chave <code>active_session:userId</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>APIs de autenticação (detalhes)</h2>
+      <table>
+        <thead><tr><th>Endpoint</th><th>Descrição</th><th>Protegido</th></tr></thead>
+        <tbody>
+          <tr><td>POST /api/auth/login</td><td>Autentica usuário por CPF/email + senha; retorna token e refreshToken</td><td>No</td></tr>
+          <tr><td>POST /api/auth/register-tutor</td><td>Cadastro público de tutor (e optional pet)</td><td>No</td></tr>
+          <tr><td>POST /api/auth/register-unit</td><td>Cadastro de unidade (clínica/ONG) e admin</td><td>No</td></tr>
+          <tr><td>POST /api/auth/logout</td><td>Invalida sessão ativa em Redis e limpa cookies</td><td>Yes (protect)</td></tr>
+          <tr><td>GET /api/auth/me</td><td>Retorna dados do usuário logado (role, permissions, unit)</td><td>Yes (protect)</td></tr>
+          <tr><td>PUT /api/auth/change-password</td><td>Alteração de senha (força/voluntária)</td><td>Yes (protect)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Dependências (package.json)</h2>
+      <table>
+        <thead><tr><th>Pacote</th><th>Versão</th><th>Função</th></tr></thead>
+        <tbody>
+          <tr><td>express</td><td>^4.19.2</td><td>Framework HTTP para rotas/controllers/middlewares</td></tr>
+          <tr><td>mongoose</td><td>^7.8.9</td><td>ODM para MongoDB (schemas e modelos)</td></tr>
+          <tr><td>redis</td><td>^4.6.13</td><td>Cliente Redis para sessões / cache</td></tr>
+          <tr><td>socket.io / @socket.io/redis-adapter</td><td>4.x / 8.x</td><td>Websockets + escala via Redis adapter</td></tr>
+          <tr><td>jsonwebtoken</td><td>^9.0.2</td><td>JWT issuance and verification</td></tr>
+          <tr><td>bcryptjs</td><td>^2.4.3</td><td>Hashing de senhas</td></tr>
+          <tr><td>multer</td><td>^1.4.5-lts.1</td><td>Upload multipart/form-data</td></tr>
+          <tr><td>sharp</td><td>^0.33.2</td><td>Processamento de imagens</td></tr>
+          <tr><td>winston</td><td>^3.11.0</td><td>Logging</td></tr>
+          <tr><td>helmet / cors / compression / morgan</td><td>diversas</td><td>Segurança, CORS, compressão e logging HTTP</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Acoplamento e persistência — análise</h2>
+      <ul>
+        <li>O projeto usa controllers diretamente ligados a modelos Mongoose — acoplamento direto (controller -> model). Isso facilita entendimento, mas dificulta testes unitários isolados.</li>
+        <li>Serviços transversais (Redis, file storage) ficam em `src/services`, o que melhora reutilização; porém alguns controllers importam modelos e serviços diretamente, criando acoplamento forte.</li>
+        <li>Não há camada clara de repositório/DAO — extração de queries para services/repositories reduziria acoplamento.</li>
+        <li>Migrations são scripts ad-hoc; isso funciona, mas torna rastreabilidade e reversão mais difíceis. Recomendação: adotar um sistema de migrations para Mongo (migrate-mongo ou um processo baseado em change-sets) e versionamento das mudanças.</li>
+      </ul>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>Como inspecionar</h2>
+      <ol>
+        <li>Abra <a href="backend_structure.mmd">backend_structure.mmd</a> para editar o mermaid fonte.</li>
+        <li>Abra este arquivo <code>index.html</code> no navegador para visualizar.</li>
+        <li>Para rodar scripts/migrations: no container/ambiente com Mongo conectado, executar `node scripts/<nome>.js`.</li>
+      </ol>
+    </section>
+  </body>
+</html>

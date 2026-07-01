@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-green: #006644;
+  --primary-teal: #004d40;
+  --bg-light: #f8fafc;
+}
+
+body {
+  @apply bg-bg-light text-slate-800;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
