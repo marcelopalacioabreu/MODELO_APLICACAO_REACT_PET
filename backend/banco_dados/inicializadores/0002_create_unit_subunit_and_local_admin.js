@@ -8,14 +8,11 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 require(path.join(backendSrc,'models','Location'));
 require(path.join(backendSrc,'models','User'));
-require(path.join(backendSrc,'models','Product'));
-require(path.join(backendSrc,'models','InventoryBatch'));
 require(path.join(backendSrc,'models','Role'));
 require(path.join(backendSrc,'models','Permission'));
 // Obtain model constructors from mongoose
 const Location = mongoose.model('Location');
 
-const InventoryBatch = mongoose.model('InventoryBatch');
 async function setupPermanent() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
@@ -28,7 +25,7 @@ async function setupPermanent() {
     if (!matriz) {
       matriz = await Location.create({
         name: 'HOSPITAL MATRIZ MUNICIPAL',
-        type: 'HOSPITAL',
+        type: 'TIPO_LOCAL_01',
         isActive: true,
         status: 'APPROVED',
         day,
@@ -38,9 +35,8 @@ async function setupPermanent() {
 
     // 2. Criar Subunidades
     const subs = [
-      { name: 'CLÍNICA SATÉLITE NORTE', type: 'CLINICA' },
-      { name: 'POSTO DE SAÚDE SUL', type: 'CLINICA' },
-      { name: 'UNIDADE MÓVEL DE CASTRAÇÃO', type: 'UNIDADE_MOVEL' }
+      { name: 'LOCAL 01', type: 'TIPO_LOCAL_01' },
+      { name: 'LOCAL 02', type: 'TIPO_LOCAL_02' },
     ];
 
     for (const s of subs) {

@@ -1,6 +1,5 @@
 const path = require('path');
 const backendSrc = path.join(__dirname, '../../src');
-require(path.join(backendSrc,'models','Campaign'));
 require(path.join(backendSrc,'models','Permission'));
 require(path.join(backendSrc,'models','Role'));
 require(path.join(backendSrc,'models','User'));
