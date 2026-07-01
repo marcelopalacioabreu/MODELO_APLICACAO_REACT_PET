@@ -25,10 +25,19 @@ app.set('json replacer', (key, value) => {
 // Middlewares básicos
 app.use(require('compression')());
 app.use(require('morgan')('dev'));
+// Permitir CORS de todas as origens. Usamos wildcard para aceitar qualquer origem.
+// Observação: quando `credentials` é true o valor `origin: '*'` não é permitido;
+// se você precisar enviar cookies/autenticação cross-site, use `origin: true` e
+// garanta que clientes confiáveis enviem `withCredentials` e o cabeçalho `Origin`.
 app.use(cors({
+  // Espelha o Origin recebido, permitindo CORS para qualquer origem de forma segura
   origin: true,
-  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS','PATCH'],
+  allowedHeaders: ['Content-Type','Authorization','X-Requested-With','Accept','Origin'],
+  credentials: true
 }));
+// Habilita resposta a requests preflight OPTIONS em todas as rotas
+app.options('*', cors({ origin: true, credentials: true }));
 
 // Elite Encoding: Forçar UTF-8 em todas as requisições e respostas
 app.use(express.json({ limit: '50mb' }));
@@ -95,7 +104,7 @@ connectDB().then(async () => {
   const { client: redisClient } = require('./services/redisService');
   
   const io = new Server(server, { 
-    cors: { origin: "*", methods: ["GET", "POST"] } 
+    cors: { origin: (origin, callback) => { callback(null, true); }, methods: ['GET','POST','PUT','DELETE','OPTIONS'], credentials: true } 
   });
 
   if (!redisClient.isOpen) {
